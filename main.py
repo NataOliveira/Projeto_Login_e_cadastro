@@ -26,7 +26,7 @@ def menulogin():
 
     app.geometry("350x450")
 
-    imagem_pil = Image.open(r"C:\Users\natan\OneDrive\Documentos\GitHub\Projetos\sistema cadastro pyhon e sql\2.png")
+    imagem_pil = Image.open(r"C:\Users\natan\OneDrive\Documentos\GitHub\Projeto_Login_e_cadastro\2.png")
     labelimg = ctk.CTkImage(light_image=imagem_pil, size=(150,150))
     lbl_image = ctk.CTkLabel(master=app, image=labelimg,text='')
     lbl_image.pack(pady=(20,0))
@@ -88,7 +88,7 @@ def cadastro():
 
     app.geometry("600x750")
 
-    imagem_pil = Image.open(r"C:\Users\natan\OneDrive\Documentos\GitHub\Projetos\sistema cadastro pyhon e sql\2.png")
+    imagem_pil = Image.open(r"C:\Users\natan\OneDrive\Documentos\GitHub\Projeto_Login_e_cadastro\2.png")
     labelimg = ctk.CTkImage(light_image=imagem_pil, size=(150,150))
     lbl_image = ctk.CTkLabel(master=app, image=labelimg,text='')
     lbl_image.pack(pady=(20,0))
@@ -181,7 +181,7 @@ def cadastro():
         senha_digitada = entry_senha.get().strip()
         cpf_get = entry_cpf.get().strip()
         email_get = entry_email.get().strip()
-        data_get = data_bruta.get().strip
+        data_get = data_bruta.get().strip()
         logradouro_get = entry_logradouro.get().strip()
         numero_get = entry_numero_casa.get().strip()
         bairro_get = entry_bairro.get().strip()
@@ -207,10 +207,11 @@ def cadastro():
         Q_sql_insert_tudo = "INSERT INTO clientes (usuario,nome,senha,cpf,email,data_nascimento,logradouro,numero,bairro,cidade,estado,cep,telefone) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
         valores = (usuario_get, nome_get, senha_get, cpf_get, email_get, data_nascimento_get,logradouro_get, numero_get, bairro_get, cidade_get, estado_get, cep_get, telefone_get)
         
-        cursor = conectar_banco()
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
         try:
             cursor.execute(Q_sql_insert_tudo, valores)
-            cursor.connection.commit()
+            conexao.commit()
             messagebox.showinfo('Cadastro concluido','Usuário Cadastrado com sucesso!')
             menulogin()
             
