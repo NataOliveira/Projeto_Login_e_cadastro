@@ -56,6 +56,7 @@ def login():
     senha_input = senha.get().strip()
     conexao = None
     cliente = None
+    cursor = None 
 
     try:
         conexao = conectar_banco()
@@ -66,7 +67,7 @@ def login():
 
         #validação da senha
         if cliente and bcrypt.checkpw(senha_input.encode('utf-8'),cliente[3].encode('utf-8')):
-         label_resultado.configure(text='Logado com Sucesso',text_color='green')
+            label_resultado.configure(text='Logado com Sucesso',text_color='green')
             
         else:
             label_resultado.configure(text='Usuário ou Senha inválios',text_color='red')
@@ -79,6 +80,7 @@ def login():
     finally:
         if cursor:
             cursor.close()
+        if conexao:
             encerrar_conectar_banco(conexao)
                
 def cadastro():
