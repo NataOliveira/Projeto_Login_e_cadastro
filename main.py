@@ -1,11 +1,9 @@
 import sys
 import customtkinter as ctk
+import bcrypt
 from tkinter import messagebox
 from PIL import Image
 from datetime import datetime
-
-
-#CTK config
 
 # Adiciona a pasta ao caminho do banco de dadosd
 sys.path.append(r"C:\Users\natan\OneDrive\Documentos\MyDB")
@@ -13,36 +11,88 @@ sys.path.append(r"C:\Users\natan\OneDrive\Documentos\MyDB")
 # Importa as funções da conexão
 from conexao_db import conectar_banco, encerrar_conectar_banco
 
-def login ():
+app = None
+usuario = None
+senha = None
+label_resultado = None
+conexao = None
+
+def menulogin():
+    
+    global usuario, senha, label_resultado, lbl_image
+
+    for widget in app.winfo_children():
+        widget.destroy()
+
+    app.geometry("350x450")
+
+    imagem_pil = Image.open(r"C:\Users\natan\OneDrive\Documentos\GitHub\Projetos\sistema cadastro pyhon e sql\2.png")
+    labelimg = ctk.CTkImage(light_image=imagem_pil, size=(150,150))
+    lbl_image = ctk.CTkLabel(master=app, image=labelimg,text='')
+    lbl_image.pack(pady=(20,0))
+
+    label_usuario = ctk.CTkLabel(app,text="Usuário: ", font=('Arial', 16))
+    label_usuario.pack(pady=(10,0))
+    usuario = ctk.CTkEntry(app,placeholder_text='Usuário')
+    usuario.pack(pady=(0,0))
+
+    label_senha = ctk.CTkLabel(app, text="Senha: ", font=('Arial', 16))
+    label_senha.pack(pady=(0,0))
+    senha = ctk.CTkEntry(app,placeholder_text='password', show ="*")
+    senha.pack(pady=(0,0))
+
+    botao_entrar = ctk.CTkButton(app, text="Entrar",command=(login))
+    botao_entrar.pack(pady=20)
+
+    botao_cadastro = ctk.CTkButton(app, text="Cadastrar-se",command=(cadastro))
+    botao_cadastro.pack(pady=0)
+
+    label_resultado = ctk.CTkLabel(app,text='',font=('Arial', 16,"bold"))
+    label_resultado.pack(pady=20)
+
+def login():
 #recebe o input do usuário
     usuario_entry = usuario.get().strip()
     senha_input = senha.get().strip()
-#faz um select where no banco de dados usando o input inserido pelo usuário
-    cursor = conectado.cursor()
-    cursor.execute('SELECT * FROM clientes WHERE usuario = %s',(usuario_entry,))
-    cliente = cursor.fetchone()
-    cursor.close()
+    conexao = None
+    cliente = None
 
-#validação da senha
-    if cliente and senha_input == cliente[3]:
-       label_resultado.configure(text='Logado com Sucesso', font=('Arial', 15), text_color='green')
-           
-    else:
-        label_resultado.configure(text='Usuário ou Senha inválios', font=('Arial', 15), text_color='red')
-    
+    try:
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        #faz um select where no banco de dados usando o input inserido pelo usuário
+        cursor.execute('SELECT * FROM clientes WHERE usuario = %s', (usuario_entry,))
+        cliente = cursor.fetchone()
+
+        #validação da senha
+        if cliente and bcrypt.checkpw(senha_input.encode('utf-8'),cliente[3].encode('utf-8')):
+         label_resultado.configure(text='Logado com Sucesso',text_color='green')
+            
+        else:
+            label_resultado.configure(text='Usuário ou Senha inválios',text_color='red')
+
+    except Exception as erro:
+        label_resultado.configure(text='Sistema offline', text_color='red')
+        print(erro)
+        return
+
+    finally:
+        if cursor:
+            cursor.close()
+            encerrar_conectar_banco(conexao)
+               
 def cadastro():
 
-#Limpa a tela de login 
-    label_usuario.destroy()
-    usuario.destroy()
-    label_senha.destroy()
-    senha.destroy()
-    botao_entrar.destroy()
-    botao_cadastro.destroy()
-    label_resultado.destroy()
+    for widget in app.winfo_children():
+        widget.destroy()
 
     app.geometry("600x750")
 
+    imagem_pil = Image.open(r"C:\Users\natan\OneDrive\Documentos\GitHub\Projetos\sistema cadastro pyhon e sql\2.png")
+    labelimg = ctk.CTkImage(light_image=imagem_pil, size=(150,150))
+    lbl_image = ctk.CTkLabel(master=app, image=labelimg,text='')
+    lbl_image.pack(pady=(20,0))
+    
     frame_grid = ctk.CTkFrame(app, fg_color='transparent')
     frame_grid.pack(pady=20)
 
@@ -63,7 +113,7 @@ def cadastro():
     entry_label_senha.grid(row=3, column=0, padx=5, pady=5, sticky="w")
     entry_senha = ctk.CTkEntry(frame_grid, placeholder_text='******', show="*", width=300)
     entry_senha.grid(row=3, column=1, padx=5, pady=5, sticky="w")
-    
+        
     # Linha 4 - CPF
     entry_label_cpf = ctk.CTkLabel(frame_grid, text="CPF: ", font=('Arial', 16))
     entry_label_cpf.grid(row=4, column=0, padx=5, pady=5, sticky="w")
@@ -79,8 +129,8 @@ def cadastro():
     # Linha 6 - Data de Nascimento
     entry_label_data_de_nascimento = ctk.CTkLabel(frame_grid, text="Data de Nascimento: ", font=('Arial', 16))
     entry_label_data_de_nascimento.grid(row=6, column=0, padx=5, pady=5, sticky="w")
-    entry_data_de_nascimento = ctk.CTkEntry(frame_grid, placeholder_text='DD/MM/AAAA', width=300)
-    entry_data_de_nascimento.grid(row=6, column=1, padx=5, pady=5, sticky="w")
+    data_bruta = ctk.CTkEntry(frame_grid, placeholder_text='DD/MM/AAAA', width=300)
+    data_bruta.grid(row=6, column=1, padx=5, pady=5, sticky="w")
 
     # Linha 7 - Logradouro
     entry_label_logradouro = ctk.CTkLabel(frame_grid, text="Logradouro: ", font=('Arial', 16))
@@ -124,156 +174,67 @@ def cadastro():
     entry_telefone = ctk.CTkEntry(frame_grid, placeholder_text='+55 (0) 00000-0000', width=300)
     entry_telefone.grid(row=13, column=1, padx=5, pady=5, sticky="w")
 
-    
     def commit():
 
         usuario_get = entry_usuario.get().strip()
         nome_get = entry_nome.get().strip()
-        senha_get = entry_senha.get().strip()
+        senha_digitada = entry_senha.get().strip()
         cpf_get = entry_cpf.get().strip()
         email_get = entry_email.get().strip()
+        data_get = data_bruta.get().strip
         logradouro_get = entry_logradouro.get().strip()
         numero_get = entry_numero_casa.get().strip()
         bairro_get = entry_bairro.get().strip()
         cidade_get = entry_cidade.get().strip()
         estado_get = entry_estado.get().strip()
         cep_get = entry_cep.get().strip()
-        telefone_get = entry_telefone.get().strip()        
-       
-        if usuario_get == '' or nome_get == '' or senha_get == '' or cpf_get == '' or email_get == '' or logradouro_get == '' or numero_get == '' or bairro_get == ''or cidade_get == '' or estado_get == '' or cep_get == '' or telefone_get == '':
+        telefone_get = entry_telefone.get().strip()     
+        
+        if usuario_get == '' or nome_get == '' or senha_digitada == ''or data_get == '' or cpf_get == '' or email_get == '' or logradouro_get == '' or numero_get == '' or bairro_get == ''or cidade_get == '' or estado_get == '' or cep_get == '' or telefone_get == '':
             messagebox.showwarning("Campos Obrigatórios","Todos os campos devem ser preenchidos !") 
             return
-       
-        data_limpa = entry_data_de_nascimento.get().strip().replace('/','').replace('-','').replace('_','').replace('.','')
+        
+        senha_get = bcrypt.hashpw(senha_digitada.encode('utf-8'), bcrypt.gensalt()).decode('utf-8') 
+ 
+        data_limpa = data_bruta.get().strip().replace('/','').replace('-','').replace('_','').replace('.','')
         try:
             data_nascimento_get = datetime.strptime(data_limpa,'%d%m%Y').date()
-            
+                
         except ValueError:
             messagebox.showerror('Data Inválida','Formato de data incorreto! Digite uma data válida (DD/MM/AAA)')
-            return 
-
+            return
+     
         Q_sql_insert_tudo = "INSERT INTO clientes (usuario,nome,senha,cpf,email,data_nascimento,logradouro,numero,bairro,cidade,estado,cep,telefone) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
         valores = (usuario_get, nome_get, senha_get, cpf_get, email_get, data_nascimento_get,logradouro_get, numero_get, bairro_get, cidade_get, estado_get, cep_get, telefone_get)
-
+        
         cursor = conectar_banco()
         try:
             cursor.execute(Q_sql_insert_tudo, valores)
             cursor.connection.commit()
             messagebox.showinfo('Cadastro concluido','Usuário Cadastrado com sucesso!')
+            menulogin()
             
-            frame_grid.destroy()
-            
-             
-
         except Exception as erro:
-            print(f'Erro: {erro} ')
+            print(f'Erro: {erro}')
 
         finally:
             cursor.close()
+            encerrar_conectar_banco(conexao)
 
-      
-    
     #Botão Submite
     
+    botao_voltar_commit = ctk.CTkButton(frame_grid, text="Voltar", command=menulogin)
+    botao_voltar_commit.grid(row=15, column=0, padx=5, pady=15, sticky="w")
+    
     botao_cadastro_commit = ctk.CTkButton(frame_grid, text="Cadastrar-se", command=commit)
-    botao_cadastro_commit.grid(row=14, column=0, columnspan=2, padx=5, pady=15)
+    botao_cadastro_commit.grid(row=15, column=1, padx=5, pady=15, sticky="e")
 
+ #Definindo App
+ctk.set_appearance_mode("System")
+ctk.set_default_color_theme("dark-blue")
+app = ctk.CTk()
+app.iconbitmap(r"C:\Users\natan\OneDrive\Documentos\GitHub\Exercicios\projeto ctk\logo.ico")
+app.title('Dreyfus Bank')
 
-#Recebe os dados da conexão
-conectado = conectar_banco()
-
-if conectado:
-    #Definindo App
-    ctk.set_appearance_mode("System")
-    ctk.set_default_color_theme("dark-blue")
-    app = ctk.CTk()
-    app.iconbitmap(r"C:\Users\natan\OneDrive\Documentos\GitHub\Exercicios\projeto ctk\logo.ico")
-    app.geometry("350x450")
-    app.title('Dreyfus Bank')
-
-
-    
-    imagem_pil = Image.open(r"C:\Users\natan\OneDrive\Documentos\GitHub\Projetos\sistema cadastro pyhon e sql\2.png")
-    labelimg = ctk.CTkImage(light_image=imagem_pil, size=(150,150))
-    lbl_image = ctk.CTkLabel(master=app, image=labelimg,text='')
-    lbl_image.pack(pady=(20,0))
-
-    label_usuario = ctk.CTkLabel(app,text="Usuário: ", font=('Arial', 16))
-    label_usuario.pack(pady=(10,0))
-    usuario = ctk.CTkEntry(app,placeholder_text='Usuário')
-    usuario.pack(pady=(0,0))
-    
-
-    label_senha = ctk.CTkLabel(app, text="Senha: ", font=('Arial', 16))
-    label_senha.pack(pady=(0,0))
-    senha = ctk.CTkEntry(app,placeholder_text='password', show ="*")
-    senha.pack(pady=(0,0))
-    
-
-    botao_entrar = ctk.CTkButton(app, text="Entrar",command=(login))
-    botao_entrar.pack(pady=20)
-
-    botao_cadastro = ctk.CTkButton(app, text="Cadastrar-se",command=(cadastro))
-    botao_cadastro.pack(pady=0)
-
-
-    label_resultado = ctk.CTkLabel(app,text='',font=('Arial', 16,"bold"))
-    label_resultado.pack(pady=20)
-  
-
-# encerrar_conectar_banco(conectado)
+menulogin()
 app.mainloop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# #serve como um transportador de informações entre o código .py e o banco de dados dentro do ("") é o comando que será executado no SGBD
-# cursor = conectado.execute('SELECT * FROM clientes')
-
-#     #receberá todas as informações que o cursor trouxe, como se fosse um ponto de coleta
-# clientes = cursor.fetchall()
-
-
-#     #mostra informações clientes cadastrados
-    
-# for cliente in clientes:
-#         print(f'''ID: {cliente[0]} 
-#                 Nome: {cliente[1]} 
-#                 CPF: {cliente[2]} 
-#                 Senha: {cliente[3]} 
-#                 Email: {cliente[4]} 
-#                 Data Nascimento: {cliente[5]} 
-#                 Logradouro: {cliente[6]} 
-#                 Numero: {cliente[7]}
-#                 bairro: {cliente[8]}
-#                 estado: {cliente[9]}
-#                 UF: {cliente[10]}
-#                 telefone: {cliente[11]}''')
