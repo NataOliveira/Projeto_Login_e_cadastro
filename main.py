@@ -50,6 +50,69 @@ def menulogin():
     label_resultado = ctk.CTkLabel(app,text='',font=('Arial', 16,"bold"))
     label_resultado.pack(pady=20)
 
+def homeapp(cliente):
+
+    for widget in app.winfo_children():
+        widget.destroy()
+
+        app.geometry("600x650")
+
+    imagem_pil = Image.open(r"C:\Users\natan\OneDrive\Documentos\GitHub\Projeto_Login_e_cadastro\2.png")
+    labelimg = ctk.CTkImage(light_image=imagem_pil, size=(150,150))
+    lbl_image = ctk.CTkLabel(master=app, image=labelimg,text='')
+    lbl_image.pack(pady=(20,0))
+    
+    frame_grid = ctk.CTkFrame(app, fg_color='transparent')
+    frame_grid.pack(pady=20)
+      
+    # Linha 3 -  Nome
+    label_nome = ctk.CTkLabel(frame_grid, text="Nome: ", font=('Arial', 16))
+    label_nome.grid(row=3, column=0, padx=5, pady=5, sticky="w")
+    result_nome = ctk.CTkLabel(frame_grid, text=f"{cliente[1]} ", font=('Arial', 16))
+    result_nome.grid(row=3, column=1, padx=5, pady=5, sticky="w")
+            
+    # Linha 4 - CPF
+    label_cpf = ctk.CTkLabel(frame_grid, text="CPF: ", font=('Arial', 16))
+    label_cpf.grid(row=4, column=0, padx=5, pady=5, sticky="w")
+    result_cpf = ctk.CTkLabel(frame_grid, text=f"{cliente[2]} ", font=('Arial', 16))
+    result_cpf.grid(row=4, column=1, padx=5, pady=5, sticky="w")
+  
+    # Linha 5 - Email
+    label_email = ctk.CTkLabel(frame_grid, text="Email: ", font=('Arial', 16))
+    label_email.grid(row=5, column=0, padx=5, pady=5, sticky="w")
+    result_email = ctk.CTkLabel(frame_grid, text=f"{cliente[4]} ", font=('Arial', 16))
+    result_email.grid(row=5, column=1, padx=5, pady=5, sticky="w")
+   
+    # Linha 6 - Data de Nascimento
+    label_data_de_nascimento = ctk.CTkLabel(frame_grid, text="Data de Nascimento: ", font=('Arial', 16))
+    label_data_de_nascimento.grid(row=6, column=0, padx=5, pady=5, sticky="w")
+    result_data_nascimento = ctk.CTkLabel(frame_grid, text=f"{cliente[5]} ", font=('Arial', 16))
+    result_data_nascimento.grid(row=6, column=1, padx=5, pady=5, sticky="w")
+   
+    # Linha 7 - Endreço
+    label_endereço = ctk.CTkLabel(frame_grid, text="Endereço: ", font=('Arial', 16))
+    label_endereço.grid(row=7, column=0, padx=5, pady=5, sticky="w")
+    result_endereço = ctk.CTkLabel(frame_grid, text=f"{cliente[6]},{cliente[7]},{cliente[8]},{cliente[9]},{cliente[10]} ", font=('Arial', 16))
+    result_endereço.grid(row=7, column=1, padx=5, pady=5, sticky="w")
+   
+    # Linha 12 - CEP
+    label_cep = ctk.CTkLabel(frame_grid, text="CEP: ", font=('Arial', 16))
+    label_cep.grid(row=12, column=0, padx=5, pady=5, sticky="w")
+    result_cep = ctk.CTkLabel(frame_grid, text=f"{cliente[11]} ", font=('Arial', 16))
+    result_cep.grid(row=12, column=1, padx=5, pady=5, sticky="w")
+ 
+    # Linha 13 - Telefone
+    label_telefone = ctk.CTkLabel(frame_grid, text="Telefone: ", font=('Arial', 16))
+    label_telefone.grid(row=13, column=0, padx=5, pady=5, sticky="w")
+    result_telefone = ctk.CTkLabel(frame_grid, text=f"{cliente[12]} ", font=('Arial', 16))
+    result_telefone.grid(row=13, column=1, padx=5, pady=5, sticky="w")
+
+    botao_voltar_commit = ctk.CTkButton(frame_grid, text="Voltar", command=menulogin)
+    botao_voltar_commit.grid(row=15, column=0, padx=5, pady=15, sticky="w")
+ 
+
+    
+
 def login():
 #recebe o input do usuário
     usuario_entry = usuario.get().strip()
@@ -68,6 +131,7 @@ def login():
         #validação da senha
         if cliente and bcrypt.checkpw(senha_input.encode('utf-8'),cliente[3].encode('utf-8')):
             label_resultado.configure(text='Logado com Sucesso',text_color='green')
+            homeapp(cliente)
             
         else:
             label_resultado.configure(text='Usuário ou Senha inválios',text_color='red')
@@ -137,7 +201,7 @@ def cadastro():
     # Linha 7 - Logradouro
     entry_label_logradouro = ctk.CTkLabel(frame_grid, text="Logradouro: ", font=('Arial', 16))
     entry_label_logradouro.grid(row=7, column=0, padx=5, pady=5, sticky="w")
-    entry_logradouro = ctk.CTkEntry(frame_grid, placeholder_text='Rua, Av., Estr.', width=300)
+    entry_logradouro = ctk.CTkEntry(frame_grid, placeholder_text='Ex.: Rua, Av., Estrada', width=300)
     entry_logradouro.grid(row=7, column=1, padx=5, pady=5, sticky="w")
 
     # Linha 8 - Número
@@ -161,8 +225,11 @@ def cadastro():
     # Linha 11 - Estado
     entry_label_estado = ctk.CTkLabel(frame_grid, text="Estado: ", font=('Arial', 16))
     entry_label_estado.grid(row=11, column=0, padx=5, pady=5, sticky="w")
-    entry_estado = ctk.CTkEntry(frame_grid, placeholder_text='UF', width=50)
+
+    entry_estado = ctk.CTkComboBox(frame_grid,values=["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS",
+    "MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"],width=80,state="readonly")
     entry_estado.grid(row=11, column=1, padx=5, pady=5, sticky="w")
+    entry_estado.set("UF")  
 
     # Linha 12 - CEP
     entry_label_cep = ctk.CTkLabel(frame_grid, text="CEP: ", font=('Arial', 16))
@@ -200,7 +267,7 @@ def cadastro():
  
         data_limpa = data_bruta.get().strip().replace('/','').replace('-','').replace('_','').replace('.','')
         try:
-            data_nascimento_get = datetime.strptime(data_limpa,'%d%m%Y').date()
+            data_nascimento_get = datetime.strptime(data_limpa,'%Y%m%a').date()
                 
         except ValueError:
             messagebox.showerror('Data Inválida','Formato de data incorreto! Digite uma data válida (DD/MM/AAA)')
