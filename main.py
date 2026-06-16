@@ -50,6 +50,40 @@ def menulogin():
     label_resultado = ctk.CTkLabel(app,text='',font=('Arial', 16,"bold"))
     label_resultado.pack(pady=20)
 
+def login():
+#recebe o input do usuário
+    usuario_entry = usuario.get().strip()
+    senha_input = senha.get().strip()
+    conexao = None
+    cliente = None
+    cursor = None 
+
+    try:
+        conexao = conectar_banco()
+        cursor = conexao.cursor()
+        #faz um select where no banco de dados usando o input inserido pelo usuário
+        cursor.execute('SELECT * FROM clientes WHERE usuario = %s', (usuario_entry,))
+        cliente = cursor.fetchone()
+
+        #validação da senha
+        if cliente and bcrypt.checkpw(senha_input.encode('utf-8'),cliente[3].encode('utf-8')):
+            label_resultado.configure(text='Logado com Sucesso',text_color='green')
+            homeapp(cliente)
+            
+        else:
+            label_resultado.configure(text='Usuário ou Senha inválios',text_color='red')
+
+    except Exception as erro:
+        label_resultado.configure(text='Sistema offline', text_color='red')
+        print(erro)
+        return
+
+    finally:
+        if cursor:
+            cursor.close()
+        if conexao:
+            encerrar_conectar_banco(conexao)
+               
 def homeapp(cliente):
 
     for widget in app.winfo_children():
@@ -86,13 +120,13 @@ def homeapp(cliente):
     # Linha 6 - Data de Nascimento
     label_data_de_nascimento = ctk.CTkLabel(frame_grid, text="Data de Nascimento: ", font=('Arial', 16))
     label_data_de_nascimento.grid(row=6, column=0, padx=5, pady=5, sticky="w")
-    result_data_nascimento = ctk.CTkLabel(frame_grid, text=f"{cliente[5]} ", font=('Arial', 16))
+    result_data_nascimento = ctk.CTkLabel(frame_grid, text=f"{cliente[5].strftime('%d/%m/%Y')} ", font=('Arial', 16))
     result_data_nascimento.grid(row=6, column=1, padx=5, pady=5, sticky="w")
    
     # Linha 7 - Endreço
     label_endereço = ctk.CTkLabel(frame_grid, text="Endereço: ", font=('Arial', 16))
     label_endereço.grid(row=7, column=0, padx=5, pady=5, sticky="w")
-    result_endereço = ctk.CTkLabel(frame_grid, text=f"{cliente[6]},{cliente[7]},{cliente[8]},{cliente[9]},{cliente[10]} ", font=('Arial', 16))
+    result_endereço = ctk.CTkLabel(frame_grid, text=f"{cliente[6]}, {cliente[7]}, {cliente[8]}, {cliente[9]}, {cliente[10]} ", font=('Arial', 16))
     result_endereço.grid(row=7, column=1, padx=5, pady=5, sticky="w")
    
     # Linha 12 - CEP
@@ -110,43 +144,6 @@ def homeapp(cliente):
     botao_voltar_commit = ctk.CTkButton(frame_grid, text="Voltar", command=menulogin)
     botao_voltar_commit.grid(row=15, column=0, padx=5, pady=15, sticky="w")
  
-
-    
-
-def login():
-#recebe o input do usuário
-    usuario_entry = usuario.get().strip()
-    senha_input = senha.get().strip()
-    conexao = None
-    cliente = None
-    cursor = None 
-
-    try:
-        conexao = conectar_banco()
-        cursor = conexao.cursor()
-        #faz um select where no banco de dados usando o input inserido pelo usuário
-        cursor.execute('SELECT * FROM clientes WHERE usuario = %s', (usuario_entry,))
-        cliente = cursor.fetchone()
-
-        #validação da senha
-        if cliente and bcrypt.checkpw(senha_input.encode('utf-8'),cliente[3].encode('utf-8')):
-            label_resultado.configure(text='Logado com Sucesso',text_color='green')
-            homeapp(cliente)
-            
-        else:
-            label_resultado.configure(text='Usuário ou Senha inválios',text_color='red')
-
-    except Exception as erro:
-        label_resultado.configure(text='Sistema offline', text_color='red')
-        print(erro)
-        return
-
-    finally:
-        if cursor:
-            cursor.close()
-        if conexao:
-            encerrar_conectar_banco(conexao)
-               
 def cadastro():
 
     for widget in app.winfo_children():
@@ -267,7 +264,7 @@ def cadastro():
  
         data_limpa = data_bruta.get().strip().replace('/','').replace('-','').replace('_','').replace('.','')
         try:
-            data_nascimento_get = datetime.strptime(data_limpa,'%Y%m%a').date()
+            data_nascimento_get = datetime.strptime(data_limpa,'%d%m%Y').date()
                 
         except ValueError:
             messagebox.showerror('Data Inválida','Formato de data incorreto! Digite uma data válida (DD/MM/AAA)')
@@ -300,6 +297,7 @@ def cadastro():
     botao_cadastro_commit.grid(row=15, column=1, padx=5, pady=15, sticky="e")
 
  #Definindo App
+
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("dark-blue")
 app = ctk.CTk()
