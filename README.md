@@ -26,7 +26,9 @@ O sistema permite que um usuário se cadastre informando dados pessoais e de end
 - [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) — interface gráfica
 - [bcrypt](https://pypi.org/project/bcrypt/) — hash de senhas
 - [Pillow (PIL)](https://pypi.org/project/pillow/) — manipulação de imagens
-- Banco de dados relacional (PostgreSQL/MySQL, via módulo próprio `conexao_db`)
+- [PostgreSQL](https://www.postgresql.org/) — banco de dados relacional
+- [psycopg](https://www.psycopg.org/) — driver de conexão com o PostgreSQL
+- [python-dotenv](https://pypi.org/project/python-dotenv/) — carregamento de variáveis de ambiente
 
 ## 📁 Estrutura esperada do projeto
 
@@ -34,6 +36,8 @@ O sistema permite que um usuário se cadastre informando dados pessoais e de end
 projeto/
 ├── main.py                 # Arquivo principal (código da aplicação)
 ├── conexao_db.py            # Módulo com as funções conectar_banco() e encerrar_conectar_banco()
+├── .env                       # Variáveis de ambiente com as credenciais do banco (NÃO versionar)
+├── .gitignore                 # Deve incluir o .env
 ├── logo.ico                  # Ícone da aplicação
 └── 2.png                     # Imagem exibida nas telas de login/cadastro/home
 ```
@@ -70,15 +74,23 @@ A aplicação espera uma tabela com, no mínimo, as seguintes colunas (na ordem 
 
 2. Instale as dependências:
    ```bash
-   pip install customtkinter bcrypt pillow
+   pip install customtkinter bcrypt pillow psycopg python-dotenv
    ```
-   *(mais o driver do banco de dados utilizado, ex: `psycopg2` para PostgreSQL ou `mysql-connector-python` para MySQL)*
 
-3. Configure o módulo `conexao_db.py` com os dados de acesso ao seu banco.
+3. Crie um arquivo `.env` na raiz do projeto com as credenciais do banco:
+   ```env
+   DB_HOST=localhost
+   DB_NAME=nome_do_banco
+   DB_USER=usuario
+   DB_PASSWORD=senha
+   ```
+   > ⚠️ Adicione `.env` ao `.gitignore` para não versionar credenciais.
 
-4. Ajuste os caminhos das imagens (`2.png`, `logo.ico`) para o seu ambiente.
+4. Crie a tabela `clientes` no PostgreSQL (veja a estrutura de colunas abaixo).
 
-5. Execute o programa:
+5. Ajuste os caminhos das imagens (`2.png`, `logo.ico`) para o seu ambiente.
+
+6. Execute o programa:
    ```bash
    python main.py
    ```
@@ -87,10 +99,10 @@ A aplicação espera uma tabela com, no mínimo, as seguintes colunas (na ordem 
 
 - Tornar os caminhos de imagens/ícone relativos ao projeto (usando `os.path`)
 - Adicionar validação de formato para CPF, e-mail, CEP e telefone
-- Criptografar dados sensíveis além da senha
 - Adicionar máscara de entrada (input mask) para CPF, telefone e CEP
 - Implementar recuperação de senha
 - Separar o código em múltiplos arquivos/módulos (telas, banco, validações)
+- Evitar abrir uma conexão com o banco automaticamente ao importar `conexao_db.py` (linha `conectado = conectar_banco()`), já que cada função já abre e fecha sua própria conexão
 
 ## 📄 Licença
 
